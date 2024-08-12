@@ -6,6 +6,9 @@
 # @toolbar
 # @runtime Jython
 
+# Jump to address upon match.
+opt__goto_on_match = True
+
 # Clear matching range of existing code.
 opt__clear_range = True
 
@@ -200,6 +203,9 @@ try:
 
         for instanceCount, position in enumerate(positions):
 
+            if opt__goto_on_match:
+                goTo(position)
+
             position_end = position.add(fileSize)
 
             print("{0:<48.44}{4:>16}\t@ {2} -> {3}".format(
@@ -292,7 +298,6 @@ try:
                             )
                     )
             
-            instanceCount += 1
 except Exception as e:
     print('An error occurred:', e)
     sys.exit(1)
