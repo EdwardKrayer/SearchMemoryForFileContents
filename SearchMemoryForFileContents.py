@@ -10,24 +10,25 @@
 opt__goto_on_match = True
 
 # Clear matching range of existing code.
-opt__clear_range = True
+opt__clear_addr_range = True
 
-# Bookmark Options:         {0} = Address
-#                           {1} = File Name
-#                           {2} = Instance Count
-opt__create_bookmark = True
-opt__format_bookmark_note = "{1} #{2}"
-opt__format_bookmark_category = "FindFileContents"
+# Bookmark Options:
+#   Format Vars:    {0} = Address, {1} = File Name, {2} = Instance Count
+opt__bookmark_creation = True
+opt__bookmark_format = "{1} #{2}"
+opt__bookmark_category = "FileMatch"
+opt__bookmark_print_to_console = True
 
-# Label Options:            {0} = Address
-#                           {1} = File Name
-#                           {2} = Instance Count
-opt__create_label = True
-opt__format_label = "file_{1}{2}_{0}"
-opt__make_label_primary = True
-opt__clear_preexisting_labels = True
+# Label Options:
+#   Format Vars:    {0} = Address, {1} = File Name, {2} = Instance Count
+opt__label_creation = True
+opt__label_format = "file_{1}{2}_{0}"
+opt__label_make_primary = True
+opt__label_clear_preexisting = True
+opt__label_print_to_console = True
 
-opt__create_data_type = True
+# Create array for matched file.
+opt__array_creation = True
 
 import sys
 import os.path
@@ -217,12 +218,12 @@ try:
                     )
                 )
 
-            if opt__clear_range:
+            if opt__clear_addr_range:
                 if find_code_between_addresses(position, position_end):
                     print("{0:<48.44}{1:>16}\t@ {2} -> {3}"
                             .format(
                                     fileName,
-                                    "Clearing Code",
+                                    "clearListing",
                                     position,
                                     position_end
                                 )
@@ -232,7 +233,7 @@ try:
                         position_end
                     )
                 
-            if opt__clear_preexisting_labels:
+            if opt__label_clear_preexisting:
                 while True:
                     current_label = currentProgram.getListing().getCodeUnitAt(
                             position
@@ -242,7 +243,7 @@ try:
                                 .format(
                                         fileName,
                                         "\"" + str(current_label) + "\"",
-                                        "Deleting Label"        
+                                        "DeleteLabelCmd"
                                     )
                             )
                         DeleteLabelCmd(
@@ -252,8 +253,8 @@ try:
                     else:
                         break
 
-            if opt__create_label:
-                new_label = opt__format_label.format(
+            if opt__label_creation:
+                new_label = opt__label_format.format(
                         position,
                         fileName,
                         instanceCount
@@ -261,42 +262,45 @@ try:
                 
                 ghidra_api.createLabel(
                         position,
-                        opt__format_label.format(
+                        opt__label_format.format(
                                 position,
                                 fileName,
                                 instanceCount
                             ),
-                        opt__make_label_primary,
+                        opt__label_make_primary,
                         SourceType.USER_DEFINED
                     )
                 
                 print("{0:<48.44}{1:>16}\t{2}"
                         .format(
                                 fileName,
-                                "Added Label",
+                                "createLabel",
                                 "\"" + new_label + "\""
                             )
                     )
 
-            if opt__create_bookmark:
+            if opt__bookmark_creation:
                 ghidra_api.createBookmark(
                         position,
-                        opt__format_bookmark_category,
-                        opt__format_bookmark_note.format(
+                        opt__bookmark_category,
+                        opt__bookmark_format.format(
                                 position,
                                 fileName,
                                 instanceCount
                             )
                     )
 
-            if opt__create_data_type:
-                ghidra_api.createData(
-                        position,
-                        ArrayDataType(
-                                ByteDataType.dataType,
-                                fileSize
-                            )
-                    )
+            if opt__array_creation:
+                try:
+                    ghidra_api.createData(
+                            position,
+                            ArrayDataType(
+                                    ByteDataType.dataType,
+                                    fileSize
+                                )
+                        )
+                except Exception as e:
+                    print('An error occurred:', e)
             
 except Exception as e:
     print('An error occurred:', e)
